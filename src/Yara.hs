@@ -69,9 +69,8 @@ tokenize = go 1 Nothing
               (flags, rest') = span (`elem` "is") rest
            in emit ln (KRegex body) (flags `seq` rest')
     go ln (Just (KSym '=')) ('{' : r) =
-      let (body, rest) = break (== '}') r
-          rest' = drop 1 rest
-       in Tok ln (KHex body) : go (ln + countNl body) (Just (KHex body)) rest'
+      let (body, nls, rest') = readHex r
+       in Tok ln (KHex body) : go (ln + nls) (Just (KHex body)) rest'
     go ln _ s@(c : r)
       | c `elem` "$#@!" =
           let (name, rest) = span (\x -> isAlphaNum x || x == '_') r
@@ -92,6 +91,21 @@ tokenize = go 1 Nothing
     regexCtx (Just (KSym '=')) = True
     regexCtx (Just (KWord "matches")) = True
     regexCtx _ = False
+
+    -- Hex strings may carry // and /* */ comments (often disassembly with braces in them), so skip those up to the real closing brace.
+    readHex :: String -> (String, Int, String)
+    readHex [] = ([], 0, [])
+    readHex ('}' : r) = ([], 0, r)
+    readHex ('/' : '/' : r) =
+      let (_, rest) = break (== '\n') r
+          (b, n, rest') = readHex rest
+       in (b, n, rest')
+    readHex ('/' : '*' : r) =
+      let (body, rest) = blockComment r
+          (b, n, rest') = readHex rest
+       in (replicate (countNl body) '\n' ++ b, n + countNl body, rest')
+    readHex ('\n' : r) = let (b, n, rest) = readHex r in ('\n' : b, n + 1, rest)
+    readHex (x : r) = let (b, n, rest) = readHex r in (x : b, n, rest)
 
     blockComment :: String -> (String, String)
     blockComment [] = ([], [])
@@ -241,9 +255,14 @@ textLen ('\\' : _ : r) = 1 + textLen r
 textLen (_ : r) = 1 + textLen r
 
 hexFixedBytes :: String -> Int
-hexFixedBytes s = length [w | w <- words (map clean s), length w == 2, all isHexDigit w]
+hexFixedBytes s = pairs (filter (\c -> isHexDigit c || c == '?') (stripJumps s))
   where
-    clean c = if c `elem` "[]()|~-" then ' ' else c
+    -- drop [n-m] jumps, then count two-digit pairs with no wildcard nibble; spacing is optional in YARA hex strings
+    stripJumps [] = []
+    stripJumps ('[' : r) = stripJumps (drop 1 (dropWhile (/= ']') r))
+    stripJumps (c : r) = c : stripJumps r
+    pairs (a : b : r) = (if isHexDigit a && isHexDigit b then 1 else 0) + pairs r
+    pairs _ = 0
 
 hexStartsWild :: String -> Bool
 hexStartsWild s = case dropWhile isSpace s of

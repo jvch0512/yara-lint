@@ -3,3 +3,4 @@ tests/spec
 build/
 *.o
 *.hi
+results.sarif

@@ -2,6 +2,8 @@
 
 yara-lint reads YARA rule files with its own tokenizer and reports the problems that stop a rule from compiling or make it slow or noisy: a missing condition, strings that are defined but never referenced, references to strings that do not exist, duplicate string identifiers, strings shorter than four bytes, conditions that are always true, regexes with unbounded `.*`, rules that scan every file in full, missing metadata and duplicate rule names across a rule set.
 
+![Terminal demo of yara-lint on its sample data](docs/demo.svg)
+
 **Live demo:** https://jvch0512.github.io/yara-lint/ (Synthetic data.)
 
 Haskell (GHC boot libraries only). The demo page is rendered from the tool's `--tsv` output by `scripts/site.py` (Python 3, only needed to regenerate the page).
@@ -50,3 +52,17 @@ make test    # A Haskell test program: tokenizer, every rule on good and bad rul
 ```
 
 MIT.
+
+## Code scanning (SARIF)
+
+`scripts/tsv2sarif.py` converts the `--tsv` output into SARIF 2.1.0, so findings show up in GitHub code scanning:
+
+```sh
+bin/yara-lint examples --tsv | python3 scripts/tsv2sarif.py --tool yara-lint --prefix examples > results.sarif
+```
+
+Upload `results.sarif` with `github/codeql-action/upload-sarif`. Severities map to SARIF levels (critical and high to error, medium to warning, low and info to note) and to a `security-severity` score.
+
+## Validated on real data
+
+This tool was run on public corpora and the false positives it produced were fixed. Corpus, counts and bugs found are in [docs/validation.md](docs/validation.md).

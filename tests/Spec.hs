@@ -98,6 +98,10 @@ main = do
   eq (codes (withCond "$a and $b" `replaceAll` ("alpha-string", "\\x41\\x42"))) ["YAR004"] "escaped bytes count as bytes"
   eq (codes (withCond "$a and $b" `replaceAll` ("\"alpha-string\"", "{ 4D 5A }"))) ["YAR004"] "short hex"
   eq (codes (withCond "$a and $b" `replaceAll` ("\"alpha-string\"", "{ ?? ?? 4D 5A 90 00 }"))) ["YAR004"] "hex starting with wildcard"
+  -- found by running on the real signature-base rule set
+  eq (codes (withCond "$a and $b" `replaceAll` ("\"alpha-string\"", "{ 85C0BA15000000750989D05BC30F1F44 0000BE }"))) [] "unspaced hex bytes are counted"
+  eq (codes (withCond "$a and $b" `replaceAll` ("\"alpha-string\"", "{ 4D5A // pop edi {_\n 9000 0300 }"))) [] "braces inside hex comments do not end the string"
+  eq (codes (withCond "$a and $b" `replaceAll` ("\"alpha-string\"", "{ 4D /* } */ 5A 90 00 03 00 }"))) [] "block comment inside hex"
   eq (codes (withCond "$a and $b" `replaceAll` ("\"alpha-string\"", "{ 4D 5A [2-4] 90 00 ( 01 | 02 ) }"))) [] "hex with jump and alternative"
 
   -- YAR005
