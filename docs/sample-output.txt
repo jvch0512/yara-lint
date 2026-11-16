@@ -1,0 +1,27 @@
+3 files, 13 findings
+HIGH     YAR003 rules/needs_work.yar:2
+         "Mimikatz_Strings": condition uses $missing which is not defined
+HIGH     YAR010 rules/needs_work.yar:6
+         "Mimikatz_Strings": string $a is defined more than once
+HIGH     YAR002 rules/needs_work.yar:9
+         "Mimikatz_Strings": string $d is not referenced in the condition
+HIGH     YAR001 rules/needs_work.yar:14
+         "No_Condition": rule has no condition
+MEDIUM   YAR009 rules/needs_work.yar:2
+         "Mimikatz_Strings" is already defined at rules/good.yar:3
+MEDIUM   YAR004 rules/needs_work.yar:5
+         "Mimikatz_Strings": string $a is shorter than four bytes
+MEDIUM   YAR008 rules/needs_work.yar:7
+         "Mimikatz_Strings": regex $b has an unbounded .* or .+
+MEDIUM   YAR004 rules/needs_work.yar:8
+         "Mimikatz_Strings": hex string $c has fewer than four fixed bytes
+MEDIUM   YAR005 rules/needs_work.yar:23
+         "Match_Everything": condition is always true
+LOW      YAR006 rules/needs_work.yar:2
+         "Mimikatz_Strings": no filesize bound or file header check, every file is scanned in full
+LOW      YAR007 rules/needs_work.yar:2
+         "Mimikatz_Strings": meta has no author
+LOW      YAR007 rules/needs_work.yar:2
+         "Mimikatz_Strings": meta has no description
+INFO     YAR000 rules/empty.yara
+         no YARA rules found, ignored

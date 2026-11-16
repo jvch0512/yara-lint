@@ -1,0 +1,5 @@
+_build/
+tests/spec
+build/
+*.o
+*.hi

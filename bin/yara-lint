@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Launcher: runs the built Haskell binary. Build first with `make build`.
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec "$DIR/build/yara-lint" "$@"
